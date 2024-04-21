@@ -1,4 +1,4 @@
-from configure import Dispatcher, dispatcher, bot, support_bot
+from configure import Dispatcher, dispatcher
 
 from functions import types
 from functions import send_photos_сomputer_technology
