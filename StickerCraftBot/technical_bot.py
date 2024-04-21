@@ -12,11 +12,13 @@ ADMIN_ID = "942850147"
 bot = Bot(token=API_TOKEN)
 dispatcher = Dispatcher(bot)
 
-@dispatcher.message_handler(commands=['start'])
+# Команда /start
+@dispatcher.message_handler(commands=["start"])
 async def start(message: types.Message):
-    await message.answer('Здравствуйте! Отправьте ваш вопрос или сообщение. Мы обработаем его в кратчайшие сроки.')
+    await message.answer("Здравствуйте! Отправьте ваш вопрос или сообщение. Мы обработаем его в кратчайшие сроки.")
 
-@dispatcher.message_handler(commands=['return_bot'])
+# Команда /return_bot
+@dispatcher.message_handler(commands=["return_bot"])
 async def message_support(message: types.Message):
     await message.reply("Перейдите по этой ссылке, чтобы вернуться к боту по созданию стикеров!")
 
@@ -26,7 +28,7 @@ async def message_support(message: types.Message):
     await message.reply("Нажмите кнопку, чтобы вернуться к боту:", reply_markup=keyboard)
 
 # Команда /help
-@dispatcher.message_handler(commands=['help'])
+@dispatcher.message_handler(commands=["help"])
 async def show_help(message: types.Message):
     commands = "Список команд:\n" \
                 "/start - запустить бота\n" \
@@ -35,10 +37,11 @@ async def show_help(message: types.Message):
 
     await message.answer(commands)
 
+# Ответ бота на входящие сообщения
 @dispatcher.message_handler(lambda message: message)
 async def handle_message(message: types.Message):
     if message != ("/return_bot" or "/start" or "/help"):
         await message.answer("Спасибо за ваше сообщение! Мы ответим вам в ближайшее время.")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     executor.start_polling(dispatcher, skip_updates=True)
