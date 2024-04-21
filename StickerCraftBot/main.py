@@ -1,14 +1,14 @@
+from configure import Dispatcher, dispatcher, bot, support_bot
+
+from functions import types
+from functions import send_photos_сomputer_technology
+from functions import send_photos_emotions_and_expressions
+from functions import send_photos_funny_situations
+from functions import send_photos_phrases_and_memes
+
 import logging
-from aiogram import Bot, Dispatcher, types
+
 from aiogram import executor
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-
-import configure
-
-# Создаем экземпляр бота и диспетчера
-bot = Bot(configure.config["token"])
-storage = MemoryStorage()
-dispatcher = Dispatcher(bot, storage=storage)
 
 # Включаем логирование
 logging.basicConfig(level=logging.INFO)
@@ -17,70 +17,70 @@ logging.basicConfig(level=logging.INFO)
 @dispatcher.message_handler(commands=['start'])
 async def start(message: types.Message):
     await message.reply(f"Привет, {message.from_user.full_name}! " +
-                        "Я бот. Добро пожаловать!")
+                        "Я бот) Добро пожаловать!")
 
 @dispatcher.message_handler(content_types=types.ContentType.PHOTO)
 async def handle_photo(message: types.Message):
     photo = message.photo[-1]
-    await photo.download()
 
+    await photo.download()
     await message.answer("Фотография сохранена!")
 
 # Команда /choose_theme
 @dispatcher.message_handler(commands=['choose_theme'])
 async def choose_theme(message: types.Message):
-    keyboard = types.ReplyKeyboardMarkup(row_width=2)
-    keyboard.add(types.KeyboardButton(text="Компьютерные технологии"))
+    keyboard = types.ReplyKeyboardMarkup(row_width=1)
+    keyboard.add(types.KeyboardButton(text='Компьютерные технологии'))
     keyboard.add(types.KeyboardButton(text="Эмоции и выражения"))
     keyboard.add(types.KeyboardButton(text="Смешные ситуации"))
     keyboard.add(types.KeyboardButton(text="Фразы и мемы"))
 
     await message.reply("Выберите тему для стикерпака:", reply_markup=keyboard)
 
-@dispatcher.message_handler(content_types=types.ContentType.PHOTO)
-async def send_photo(message: types.Message):
-    await message.reply(message.photo[-1].file_id)
-
-# Команда /photo
-@dispatcher.message_handler(commands=['photo'])
-async def send_photo(message: types.Message):
-    chat_id = message.from_user.id
-
-    photo_bytes = types.InputFile(path_or_bytesio='sticker_themes_1/image_1.png')
-    await dispatcher.bot.send_photo(chat_id=chat_id, photo=photo_bytes)
-
-# Команда /album
-@dispatcher.message_handler(commands=['album'])
-async def send_album(message: types.Message):
-    photo_bytes_1 = types.InputFile(path_or_bytesio='sticker_themes_1/image_1.png')
-    photo_bytes_2 = types.InputFile(path_or_bytesio='sticker_themes_1/image_2.png')
-    photo_bytes_3 = types.InputFile(path_or_bytesio='sticker_themes_1/image_3.png')
-    photo_bytes_4 = types.InputFile(path_or_bytesio='sticker_themes_1/image_4.png')
-    
-    await dispatcher.bot.send_photo(chat_id=message.from_user.id, photo=photo_bytes_1)
-    await dispatcher.bot.send_photo(chat_id=message.from_user.id, photo=photo_bytes_2)
-    await dispatcher.bot.send_photo(chat_id=message.from_user.id, photo=photo_bytes_3)
-    await dispatcher.bot.send_photo(chat_id=message.from_user.id, photo=photo_bytes_4)
+    if message.text == 'Компьютерные технологии':
+        await send_photos_сomputer_technology(message)
+    elif message.text == 'Эмоции и выражения':
+        await send_photos_emotions_and_expressions(message)
+    elif message.text == 'Смешные ситуации':
+        await send_photos_funny_situations(message)
+    elif message.text == 'Фразы и мемы':
+        await send_photos_phrases_and_memes(message)
 
 # Команда /source_code
 @dispatcher.message_handler(commands=['source_code'])
 async def source_code(message: types.Message):
     await message.reply("Исходный код доступен по ссылке:\n"
                         "https://github.com/AndreyRazin007/ProFrog_Hackathon_2024")
+
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton(text="Перейти на GitHub", url="https://github.com/AndreyRazin007/ProFrog_Hackathon_2024"))
 
     await message.reply("Нажмите кнопку, чтобы перейти на GitHub:", reply_markup=keyboard)
 
+@dispatcher.message_handler(commands=['support'])
+async def message_support(message: types.Message):
+    await message.reply("Перейдите по этой ссылке, чтобы отправить сообщение в техническую поддержку!")
+
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(types.InlineKeyboardButton(text="Отправить сообщение в техническую поддержку", url="https://t.me/ProFrogSupportBot"))
+
+    await message.reply("Нажмите кнопку, чтобы отправить сообщение в техническую поддержку:", reply_markup=keyboard)
+
 # Команда /help
 @dispatcher.message_handler(commands=['help'])
 async def show_help(message: types.Message):
-    help_text = "Список команд:\n" \
-                "/start - запустить бот\n" \
+    commands = "Список команд:\n" \
+                "/start - запустить бота\n" \
                 "/choose_theme - выбрать тему для стикерпака\n" \
                 "/source_code - вывести ссылку на исходный код\n" \
+                "/support - отправить сообщение в техническую поддержку\n" \
                 "/help - помощь"
-    await message.answer(help_text)
+
+    await message.answer(commands)
+
+async def shutdown(dispatcher: Dispatcher):
+    await dispatcher.storage.close()
+    await dispatcher.storage.wait_closed()
 
 if __name__ == '__main__':
-    executor.start_polling(dispatcher, skip_updates=True)
+    executor.start_polling(dispatcher, on_shutdown=shutdown, skip_updates=True)
